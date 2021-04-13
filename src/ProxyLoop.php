@@ -23,7 +23,7 @@ class ProxyLoop
      */
     public function loop($sleep_time = 0.5, $verbose = false, $xdebug_enabled = false)
     {
-        if ($debug_enabled) {
+        if ($xdebug_enabled) {
             $this->proxy_url .= '?XDEBUG_SESSION_START=1';
         }
         try {
