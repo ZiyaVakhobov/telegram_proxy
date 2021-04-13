@@ -1,0 +1,20 @@
+{
+    "name": "ziyad/telegram_proxy",
+    "authors": [
+        {
+            "name": "ZiyaVakhobov",
+            "email": "ziyavuddin.vakhobov@gmail.com"
+        }
+    ],
+    "description": "Package for proxying telegram bot without any webhook",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "ziya\\Proxy\\": "src"
+        }
+    },
+    "require": {
+        "longman/telegram-bot": "^0.71.0",
+        "ext-json": "*"
+    }
+}
