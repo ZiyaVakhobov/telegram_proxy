@@ -14,7 +14,7 @@
         }
     },
     "require": {
-        "longman/telegram-bot": "^0.71.0",
-        "ext-json": "*"
+        "ext-json": "*",
+        "ext-curl": "*"
     }
 }

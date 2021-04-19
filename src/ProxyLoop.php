@@ -10,18 +10,16 @@ use Longman\TelegramBot\Telegram;
 class ProxyLoop
 {
     private $bot_token;
-    private $bot_username;
     private $proxy_url;
 
-    public function __construct($bot_token, $bot_username, $proxy_url)
+    public function __construct($bot_token, $proxy_url)
     {
         $this->bot_token = $bot_token;
-        $this->bot_username = $bot_username;
         $this->proxy_url = $proxy_url;
     }
 
     /**
-     * @throws TelegramException
+     * @throws \Exception
      */
     public function loop($sleep_time = 0.5, $verbose = false, $xdebug_enabled = false)
     {
@@ -30,30 +28,52 @@ class ProxyLoop
         }
         try {
             // Create Telegram API object
-            $telegram = new Telegram($this->bot_token, $this->bot_username);
-            $telegram->useGetUpdatesWithoutDatabase();
+            $telegram = new TelegramApi($this->bot_token);
             while (true) {
-                $response = $telegram->handleGetUpdates();
-                foreach ($response->getResult() as $item) {
-                    $data = $item;
-                    $client = new Client(['base_uri' => $this->proxy_url]);
+                $response = $telegram->getUpdates();
+                foreach ($response['result'] ?? [] as $item) {
                     try {
-                        $client_response = $client->request('POST', '', [
-                            RequestOptions::JSON => $data
-                        ]);
+                        $client_response = $this->request($this->proxy_url, $item);
                         if ($verbose) {
                             print_r($client_response);
+                            echo "\n";
                         }
-                    } catch (\GuzzleHttp\Exception\BadResponseException $e) {
-                        echo $e->getResponse()->getBody()->getContents() . PHP_EOL;
+                        $telegram->setLastUpdate($item['update_id']);
+                    } catch (\Exception $e) {
+                        echo $e->getMessage() . PHP_EOL;
                     }
                     if ($sleep_time > 0) {
                         sleep($sleep_time);
                     }
                 }
+                usleep(120);
             }
-        } catch (TelegramException $e) {
+        } catch (\Exception $e) {
             throw $e;
         }
+    }
+
+    /**
+     * @param $url
+     * @param $body
+     * @param string $method
+     * @param array $headers
+     * @return bool|string
+     */
+    private function request($url, $body)
+    {
+
+        $ch = curl_init($url);
+
+        $payload = json_encode($body);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        $result = curl_exec($ch);
+        curl_close($ch);
+
+        return $result;
     }
 }
