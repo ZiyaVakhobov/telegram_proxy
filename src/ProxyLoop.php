@@ -2,6 +2,8 @@
 
 namespace ziya\Proxy;
 
+use GuzzleHttp\Client;
+use GuzzleHttp\RequestOptions;
 use Longman\TelegramBot\Exception\TelegramException;
 use Longman\TelegramBot\Telegram;
 
@@ -32,21 +34,18 @@ class ProxyLoop
             $telegram->useGetUpdatesWithoutDatabase();
             while (true) {
                 $response = $telegram->handleGetUpdates();
-                foreach ($response->getRawData()['result'] as $item) {
+                foreach ($response->getResult() as $item) {
                     $data = $item;
-                    $options = array(
-                        'http' => array(
-                            'method' => 'POST',
-                            'content' => json_encode($data),
-                            'header' => "Content-Type: application/json\r\n" .
-                                "Accept: application/json\r\n"
-                        )
-                    );
-                    $context = stream_context_create($options);
-                    $result = file_get_contents($this->proxy_url, false, $context);
-                    if ($verbose) {
-                        $response = json_decode($result);
-                        print_r($response);
+                    $client = new Client(['base_uri' => $this->proxy_url]);
+                    try {
+                        $client_response = $client->request('POST', '', [
+                            RequestOptions::JSON => $data
+                        ]);
+                        if ($verbose) {
+                            print_r($client_response);
+                        }
+                    } catch (\GuzzleHttp\Exception\BadResponseException $e) {
+                        echo $e->getResponse()->getBody()->getContents() . PHP_EOL;
                     }
                     if ($sleep_time > 0) {
                         sleep($sleep_time);
