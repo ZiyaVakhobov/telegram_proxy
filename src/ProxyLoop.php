@@ -46,7 +46,7 @@ class ProxyLoop
                         sleep($sleep_time);
                     }
                 }
-                usleep(120);
+                usleep(50);
             }
         } catch (\Exception $e) {
             throw $e;
