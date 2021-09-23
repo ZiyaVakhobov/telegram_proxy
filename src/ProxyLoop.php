@@ -46,7 +46,7 @@ class ProxyLoop
                         sleep($sleep_time);
                     }
                 }
-                usleep(50);
+                usleep(45);
             }
         } catch (\Exception $e) {
             throw $e;
@@ -68,7 +68,8 @@ class ProxyLoop
         $payload = json_encode($body);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
-
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // For HTTPS
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false); // For HTTPS
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
         $result = curl_exec($ch);
